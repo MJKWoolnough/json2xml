@@ -3,6 +3,7 @@ package json2xml
 import (
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"strconv"
 )
 
@@ -132,6 +133,24 @@ func (c *Converter) outputEnd() xml.Token {
 		Name: xml.Name{
 			Local: typ.String(),
 		},
+	}
+}
+
+func Convert(j *json.Decoder, x *xml.Encoder) error {
+	c := Converter{
+		decoder: j,
+	}
+	for {
+		tk, err := c.Token()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		if err = x.EncodeToken(tk); err != nil {
+			return err
+		}
 	}
 }
 
