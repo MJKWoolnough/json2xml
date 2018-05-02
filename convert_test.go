@@ -44,6 +44,7 @@ func TestComplex(t *testing.T) {
 	}{
 		{"{\"Name1\":\"String1\"}", "<object><string name=\"Name1\">String1</string></object>"},
 		{"[\"Name1\",\"String1\"]", "<array><string>Name1</string><string>String1</string></array>"},
+		{"[{\"A\":[{\"B\":3.14159,\"C\":null},\"D\",\"E\",null,1.234],\"F\":123},\"G\"]", "<array><object><array name=\"A\"><object><number name=\"B\">3.14159</number><null name=\"C\"></null></object><string>D</string><string>E</string><null></null><number>1.234</number></array><number name=\"F\">123</number></object><string>G</string></array>"},
 	} {
 		x := xml.NewEncoder(&buf)
 		if err := Convert(json.NewDecoder(strings.NewReader(test.Input)), x); err != nil {
