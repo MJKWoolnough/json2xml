@@ -30,6 +30,8 @@ import (
 	"encoding/xml"
 	"io"
 	"strconv"
+
+	"github.com/MJKWoolnough/errors"
 )
 
 type ttype byte
@@ -62,16 +64,28 @@ func (t ttype) String() string {
 	}
 }
 
+// JSONDecoder represents a type that gives out JSON tokens, usually
+// implemented by *json.Decoder
+type JSONDecoder interface {
+	Token() (json.Token, error)
+}
+
+// XMLEncoder represents a type that takes XML tokens, usually implemented by
+// *xml.Encoder
+type XMLEncoder interface {
+	EncodeToken(xml.Token) error
+}
+
 // Converter represents the ongoing conversion from JSON to XML
 type Converter struct {
-	decoder *json.Decoder
+	decoder JSONDecoder
 	types   []ttype
 	data    *string
 }
 
 // Tokens provides a JSON converter that implements the xml.TokenReader
 // interface
-func Tokens(j *json.Decoder) *Converter {
+func Tokens(j JSONDecoder) *Converter {
 	return &Converter{
 		decoder: j,
 	}
@@ -93,40 +107,57 @@ func (c *Converter) Token() (xml.Token, error) {
 		}
 	}
 	var keyName *string
-	for {
-		token, err := c.decoder.Token()
+	token, err := c.decoder.Token()
+	if err != nil {
+		return nil, err
+	}
+	if len(c.types) > 0 && c.types[len(c.types)-1] == typObject && token != json.Delim('}') {
+		tokenStr, ok := token.(string)
+		if !ok {
+			return nil, ErrInvalidKey
+		}
+		keyName = &tokenStr
+		token, err = c.decoder.Token()
 		if err != nil {
 			return nil, err
 		}
-		switch token := token.(type) {
-		case json.Delim:
-			switch token {
-			case '{':
-				return c.outputStart(typObject, keyName), nil
-			case '[':
-				return c.outputStart(typArray, keyName), nil
-			case '}', ']':
-				return c.outputEnd(), nil
+	}
+	switch token := token.(type) {
+	case json.Delim:
+		switch token {
+		case '{':
+			return c.outputStart(typObject, keyName), nil
+		case '[':
+			return c.outputStart(typArray, keyName), nil
+		case '}':
+			if len(c.types) == 0 || c.types[len(c.types)-1] != typObject {
+				return nil, ErrInvalidToken
 			}
-		case bool:
-			if token {
-				return c.outputType(typBool, &cTrue, keyName), nil
+			return c.outputEnd(), nil
+		case ']':
+			if len(c.types) == 0 || c.types[len(c.types)-1] != typArray {
+				return nil, ErrInvalidToken
 			}
-			return c.outputType(typBool, &cFalse, keyName), nil
-		case float64:
-			number := strconv.FormatFloat(token, 'f', -1, 64)
-			return c.outputType(typNumber, &number, keyName), nil
-		case json.Number:
-			return c.outputType(typNumber, (*string)(&token), keyName), nil
-		case string:
-			if len(c.types) > 0 && c.types[len(c.types)-1] == typObject && keyName == nil {
-				keyName = &token
-			} else {
-				return c.outputType(typString, &token, keyName), nil
-			}
-		case nil:
-			return c.outputType(typNull, nil, keyName), nil
+			return c.outputEnd(), nil
+		default:
+			return nil, ErrUnknownToken
 		}
+	case bool:
+		if token {
+			return c.outputType(typBool, &cTrue, keyName), nil
+		}
+		return c.outputType(typBool, &cFalse, keyName), nil
+	case float64:
+		number := strconv.FormatFloat(token, 'f', -1, 64)
+		return c.outputType(typNumber, &number, keyName), nil
+	case json.Number:
+		return c.outputType(typNumber, (*string)(&token), keyName), nil
+	case string:
+		return c.outputType(typString, &token, keyName), nil
+	case nil:
+		return c.outputType(typNull, nil, keyName), nil
+	default:
+		return nil, ErrUnknownToken
 	}
 }
 
@@ -167,7 +198,7 @@ func (c *Converter) outputEnd() xml.Token {
 }
 
 // Convert converts JSON and sends it to the given XML encoder
-func Convert(j *json.Decoder, x *xml.Encoder) error {
+func Convert(j JSONDecoder, x XMLEncoder) error {
 	c := Converter{
 		decoder: j,
 	}
@@ -188,4 +219,11 @@ func Convert(j *json.Decoder, x *xml.Encoder) error {
 var (
 	cTrue  = "true"
 	cFalse = "false"
+)
+
+// Errors
+const (
+	ErrInvalidKey   errors.Error = "invalid key type"
+	ErrUnknownToken errors.Error = "unknown token type"
+	ErrInvalidToken errors.Error = "invalid token"
 )
