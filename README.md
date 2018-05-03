@@ -33,10 +33,19 @@ on the type tag, for example: -
 
 ## Usage
 
+```go
+const (
+	ErrInvalidKey   errors.Error = "invalid key type"
+	ErrUnknownToken errors.Error = "unknown token type"
+	ErrInvalidToken errors.Error = "invalid token"
+)
+```
+Errors
+
 #### func  Convert
 
 ```go
-func Convert(j *json.Decoder, x *xml.Encoder) error
+func Convert(j JSONDecoder, x XMLEncoder) error
 ```
 Convert converts JSON and sends it to the given XML encoder
 
@@ -52,7 +61,7 @@ Converter represents the ongoing conversion from JSON to XML
 #### func  Tokens
 
 ```go
-func Tokens(j *json.Decoder) *Converter
+func Tokens(j JSONDecoder) *Converter
 ```
 Tokens provides a JSON converter that implements the xml.TokenReader interface
 
@@ -62,3 +71,25 @@ Tokens provides a JSON converter that implements the xml.TokenReader interface
 func (c *Converter) Token() (xml.Token, error)
 ```
 Token gets a xml.Token from the Converter, as per the xml.TokenReader interface
+
+#### type JSONDecoder
+
+```go
+type JSONDecoder interface {
+	Token() (json.Token, error)
+}
+```
+
+JSONDecoder represents a type that gives out JSON tokens, usually implemented by
+*json.Decoder
+
+#### type XMLEncoder
+
+```go
+type XMLEncoder interface {
+	EncodeToken(xml.Token) error
+}
+```
+
+XMLEncoder represents a type that takes XML tokens, usually implemented by
+*xml.Encoder
