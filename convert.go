@@ -1,3 +1,28 @@
+// Package json2xml converts a JSON structure to XML.
+//
+// json2xml wraps each type within xml tags named after the type. For example:-
+//
+// An object is wrapped in <object></object>
+// An array is wrapped in <array></array>
+//
+// When a type is a member of an object, the name of the key becomes an
+// attribute on the type tag, for example: -
+//
+// {
+// 	"Location": {
+// 		"Longitude": -1.8262,
+// 		"Latitude": 51.1789
+// 	}
+// }
+//
+// ...becomes...
+//
+// <object>
+//	<object name="Location">
+//		<number name="Longitude">-1.8262</number>
+// 		<number name="Latitude">51.1789</number>
+// 	</object>
+// <object>
 package json2xml
 
 import (
@@ -37,18 +62,23 @@ func (t ttype) String() string {
 	}
 }
 
+// Converter represents the ongoing conversion from JSON to XML
 type Converter struct {
 	decoder *json.Decoder
 	types   []ttype
 	data    *string
 }
 
+// Tokens provides a JSON converter that implements the xml.TokenReader
+// interface
 func Tokens(j *json.Decoder) *Converter {
 	return &Converter{
 		decoder: j,
 	}
 }
 
+// Token gets a xml.Token from the Converter, as per the xml.TokenReader
+// interface
 func (c *Converter) Token() (xml.Token, error) {
 	if len(c.types) > 0 {
 		switch c.types[len(c.types)-1] {
@@ -136,6 +166,7 @@ func (c *Converter) outputEnd() xml.Token {
 	}
 }
 
+// Convert converts JSON and sends it to the given XML encoder
 func Convert(j *json.Decoder, x *xml.Encoder) error {
 	c := Converter{
 		decoder: j,
