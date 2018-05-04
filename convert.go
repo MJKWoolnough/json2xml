@@ -4,6 +4,11 @@
 //
 // An object is wrapped in <object></object>
 // An array is wrapped in <array></array>
+// A boolean is wrapped in <boolean></boolean>, with either "true" or "false"
+// as chardata
+// A number is wrapped in <number></number>
+// A string is wrapped in <string></string>
+// A null becomes <null></null>, with no chardata
 //
 // When a type is a member of an object, the name of the key becomes an
 // attribute on the type tag, for example: -
