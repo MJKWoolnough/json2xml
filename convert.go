@@ -99,15 +99,15 @@ func Tokens(j JSONDecoder) *Converter {
 // Token gets a xml.Token from the Converter, as per the xml.TokenReader
 // interface
 func (c *Converter) Token() (xml.Token, error) {
+	if c.data != nil {
+		token := xml.CharData(*c.data)
+		c.data = nil
+		return token, nil
+	}
 	if len(c.types) > 0 {
 		switch c.types[len(c.types)-1] {
 		case typObject, typArray:
 		default:
-			if c.data != nil {
-				token := xml.CharData(*c.data)
-				c.data = nil
-				return token, nil
-			}
 			return c.outputEnd(), nil
 		}
 	}
