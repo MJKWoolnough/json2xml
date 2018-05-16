@@ -2,13 +2,12 @@
 //
 // json2xml wraps each type within xml tags named after the type. For example:-
 //
-// An object is wrapped in <object></object>
-// An array is wrapped in <array></array>
-// A boolean is wrapped in <boolean></boolean>, with either "true" or "false"
-// as chardata
-// A number is wrapped in <number></number>
-// A string is wrapped in <string></string>
-// A null becomes <null></null>, with no chardata
+// An object is wrapped in `<object></object>`<br />
+// An array is wrapped in `<array></array>`<br />
+// A boolean is wrapped in `<boolean></boolean>` , with either "true" or "false" as chardata<br />
+// A number is wrapped in `<number></number>`<br />
+// A string is wrapped in `<string></string>`<br />
+// A null becomes `<null></null>` , with no chardata
 //
 // When a type is a member of an object, the name of the key becomes an
 // attribute on the type tag, for example: -
@@ -22,12 +21,12 @@
 //
 // ...becomes...
 //
-// <object>
+// `<object>
 //	<object name="Location">
 //		<number name="Longitude">-1.8262</number>
 // 		<number name="Latitude">51.1789</number>
 // 	</object>
-// <object>
+// </object>`
 package json2xml
 
 import (
