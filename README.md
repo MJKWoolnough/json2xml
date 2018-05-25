@@ -85,7 +85,9 @@ type JSONDecoder interface {
 ```
 
 JSONDecoder represents a type that gives out JSON tokens, usually implemented by
-*json.Decoder
+*json.Decoder It is encouraged for implementers of this interface to output
+numbers using the json.Number type, as it reduces needless conversions. Users of
+the json.Decoder implementation should call the UseNumber method to achieve this
 
 #### type XMLEncoder
 
