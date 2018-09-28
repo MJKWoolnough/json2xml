@@ -27,7 +27,7 @@
 // 		<number name="Latitude">51.1789</number>
 // 	</object>
 // </object>`
-package json2xml
+package json2xml // import "vimagination.zapto.org/json2xml"
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/MJKWoolnough/errors"
+	"vimagination.zapto.org/errors"
 )
 
 type ttype byte
