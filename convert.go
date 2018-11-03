@@ -49,24 +49,7 @@ const (
 	typNull
 )
 
-func (t ttype) String() string {
-	switch t {
-	case typObject:
-		return "object"
-	case typArray:
-		return "array"
-	case typBool:
-		return "boolean"
-	case typNumber:
-		return "number"
-	case typString:
-		return "string"
-	case typNull:
-		return "null"
-	default:
-		return "unknown"
-	}
-}
+var ttypeNames = [...]string{"object", "array", "boolean", "number", "string", "null"}
 
 // JSONDecoder represents a type that gives out JSON tokens, usually
 // implemented by *json.Decoder
@@ -189,7 +172,7 @@ func (c *Converter) outputStart(typ ttype, keyName *string) xml.Token {
 	}
 	return xml.StartElement{
 		Name: xml.Name{
-			Local: typ.String(),
+			Local: ttypeNames[typ],
 		},
 		Attr: attr,
 	}
@@ -200,7 +183,7 @@ func (c *Converter) outputEnd() xml.Token {
 	c.types = c.types[:len(c.types)-1]
 	return xml.EndElement{
 		Name: xml.Name{
-			Local: typ.String(),
+			Local: ttypeNames[typ],
 		},
 	}
 }
