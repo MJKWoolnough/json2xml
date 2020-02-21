@@ -213,8 +213,8 @@ var (
 )
 
 // Errors
-const (
-	ErrInvalidKey   errors.Error = "invalid key type"
-	ErrUnknownToken errors.Error = "unknown token type"
-	ErrInvalidToken errors.Error = "invalid token"
+var (
+	ErrInvalidKey   = errors.New("invalid key type")
+	ErrUnknownToken = errors.New("unknown token type")
+	ErrInvalidToken = errors.New("invalid token")
 )
