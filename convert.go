@@ -32,10 +32,9 @@ package json2xml // import "vimagination.zapto.org/json2xml"
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"io"
 	"strconv"
-
-	"vimagination.zapto.org/errors"
 )
 
 type ttype byte
