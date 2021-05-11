@@ -1,16 +1,16 @@
 # json2xml
 --
-    import "github.com/MJKWoolnough/json2xml"
+    import "vimagination.zapto.org/json2xml"
 
 Package json2xml converts a JSON structure to XML.
 
 json2xml wraps each type within xml tags named after the type. For example:-
 
-An object is wrapped in `<object></object>`<br /> An array is wrapped in
-`<array></array>`<br /> A boolean is wrapped in `<boolean></boolean>` , with
-either "true" or "false" as chardata<br /> A number is wrapped in
-`<number></number>`<br /> A string is wrapped in `<string></string>`<br /> A
-null becomes `<null></null>` , with no chardata
+An object is wrapped in `<object></object>` An array is wrapped in
+`<array></array>` A boolean is wrapped in `<boolean></boolean>` , with either
+"true" or "false" as chardata A number is wrapped in `<number></number>` A
+string is wrapped in `<string></string>` A null becomes `<null></null>`, with no
+### chardata
 
 When a type is a member of an object, the name of the key becomes an attribute
 on the type tag, for example: -
@@ -38,10 +38,10 @@ on the type tag, for example: -
 ## Usage
 
 ```go
-const (
-	ErrInvalidKey   errors.Error = "invalid key type"
-	ErrUnknownToken errors.Error = "unknown token type"
-	ErrInvalidToken errors.Error = "invalid token"
+var (
+	ErrInvalidKey   = errors.New("invalid key type")
+	ErrUnknownToken = errors.New("unknown token type")
+	ErrInvalidToken = errors.New("invalid token")
 )
 ```
 Errors
