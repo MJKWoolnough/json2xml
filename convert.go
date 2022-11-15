@@ -161,7 +161,7 @@ func (c *Converter) outputStart(typ ttype, keyName *string) xml.Token {
 	var attr []xml.Attr
 	if keyName != nil {
 		attr = []xml.Attr{
-			xml.Attr{
+			{
 				Name: xml.Name{
 					Local: "name",
 				},
