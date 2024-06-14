@@ -12,20 +12,22 @@
 // When a type is a member of an object, the name of the key becomes an
 // attribute on the type tag, for example: -
 //
-// {
-// 	"Location": {
-// 		"Longitude": -1.8262,
-// 		"Latitude": 51.1789
-// 	}
-// }
+//	{
+//		"Location": {
+//			"Longitude": -1.8262,
+//			"Latitude": 51.1789
+//		}
+//	}
 //
 // ...becomes...
 //
 // `<object>
+//
 //	<object name="Location">
 //		<number name="Longitude">-1.8262</number>
-// 		<number name="Latitude">51.1789</number>
-// 	</object>
+//		<number name="Latitude">51.1789</number>
+//	</object>
+//
 // </object>`
 package json2xml // import "vimagination.zapto.org/json2xml"
 
@@ -55,18 +57,18 @@ var ttypeNames = [...]string{"object", "array", "boolean", "number", "string", "
 // It is encouraged for implementers of this interface to output numbers using
 // the json.Number type, as it reduces needless conversions.
 // Users of the json.Decoder implementation should call the UseNumber method to
-// achieve this
+// achieve this.
 type JSONDecoder interface {
 	Token() (json.Token, error)
 }
 
 // XMLEncoder represents a type that takes XML tokens, usually implemented by
-// *xml.Encoder
+// *xml.Encoder.
 type XMLEncoder interface {
 	EncodeToken(xml.Token) error
 }
 
-// Converter represents the ongoing conversion from JSON to XML
+// Converter represents the ongoing conversion from JSON to XML.
 type Converter struct {
 	decoder JSONDecoder
 	types   []ttype
@@ -74,7 +76,7 @@ type Converter struct {
 }
 
 // Tokens provides a JSON converter that implements the xml.TokenReader
-// interface
+// interface.
 func Tokens(j JSONDecoder) *Converter {
 	return &Converter{
 		decoder: j,
@@ -82,13 +84,15 @@ func Tokens(j JSONDecoder) *Converter {
 }
 
 // Token gets a xml.Token from the Converter, as per the xml.TokenReader
-// interface
+// interface.
 func (c *Converter) Token() (xml.Token, error) {
 	if c.data != nil {
 		token := xml.CharData(*c.data)
 		c.data = nil
+
 		return token, nil
 	}
+
 	if len(c.types) > 0 {
 		switch c.types[len(c.types)-1] {
 		case typObject, typArray:
@@ -96,22 +100,32 @@ func (c *Converter) Token() (xml.Token, error) {
 			return c.outputEnd(), nil
 		}
 	}
+
 	var keyName *string
+
 	token, err := c.decoder.Token()
 	if err != nil {
 		return nil, err
 	}
+
 	if len(c.types) > 0 && c.types[len(c.types)-1] == typObject && token != json.Delim('}') {
 		tokenStr, ok := token.(string)
 		if !ok {
 			return nil, ErrInvalidKey
 		}
+
 		keyName = &tokenStr
+
 		token, err = c.decoder.Token()
 		if err != nil {
 			return nil, err
 		}
 	}
+
+	return c.output(keyName, token)
+}
+
+func (c *Converter) output(keyName *string, token json.Token) (xml.Token, error) {
 	switch token := token.(type) {
 	case json.Delim:
 		switch token {
@@ -123,11 +137,13 @@ func (c *Converter) Token() (xml.Token, error) {
 			if len(c.types) == 0 || c.types[len(c.types)-1] != typObject {
 				return nil, ErrInvalidToken
 			}
+
 			return c.outputEnd(), nil
 		case ']':
 			if len(c.types) == 0 || c.types[len(c.types)-1] != typArray {
 				return nil, ErrInvalidToken
 			}
+
 			return c.outputEnd(), nil
 		default:
 			return nil, ErrUnknownToken
@@ -136,9 +152,11 @@ func (c *Converter) Token() (xml.Token, error) {
 		if token {
 			return c.outputType(typBool, &cTrue, keyName), nil
 		}
+
 		return c.outputType(typBool, &cFalse, keyName), nil
 	case float64:
 		number := strconv.FormatFloat(token, 'f', -1, 64)
+
 		return c.outputType(typNumber, &number, keyName), nil
 	case json.Number:
 		return c.outputType(typNumber, (*string)(&token), keyName), nil
@@ -153,12 +171,15 @@ func (c *Converter) Token() (xml.Token, error) {
 
 func (c *Converter) outputType(typ ttype, data *string, keyName *string) xml.Token {
 	c.data = data
+
 	return c.outputStart(typ, keyName)
 }
 
 func (c *Converter) outputStart(typ ttype, keyName *string) xml.Token {
 	c.types = append(c.types, typ)
+
 	var attr []xml.Attr
+
 	if keyName != nil {
 		attr = []xml.Attr{
 			{
@@ -169,6 +190,7 @@ func (c *Converter) outputStart(typ ttype, keyName *string) xml.Token {
 			},
 		}
 	}
+
 	return xml.StartElement{
 		Name: xml.Name{
 			Local: ttypeNames[typ],
@@ -180,6 +202,7 @@ func (c *Converter) outputStart(typ ttype, keyName *string) xml.Token {
 func (c *Converter) outputEnd() xml.Token {
 	typ := c.types[len(c.types)-1]
 	c.types = c.types[:len(c.types)-1]
+
 	return xml.EndElement{
 		Name: xml.Name{
 			Local: ttypeNames[typ],
@@ -187,19 +210,22 @@ func (c *Converter) outputEnd() xml.Token {
 	}
 }
 
-// Convert converts JSON and sends it to the given XML encoder
+// Convert converts JSON and sends it to the given XML encoder.
 func Convert(j JSONDecoder, x XMLEncoder) error {
 	c := Converter{
 		decoder: j,
 	}
+
 	for {
 		tk, err := c.Token()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				return nil
 			}
+
 			return err
 		}
+
 		if err = x.EncodeToken(tk); err != nil {
 			return err
 		}
@@ -211,7 +237,7 @@ var (
 	cFalse = "false"
 )
 
-// Errors
+// Errors.
 var (
 	ErrInvalidKey   = errors.New("invalid key type")
 	ErrUnknownToken = errors.New("unknown token type")
