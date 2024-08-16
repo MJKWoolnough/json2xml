@@ -15,27 +15,23 @@ string is wrapped in `<string></string>` A null becomes `<null></null>`, with no
 When a type is a member of an object, the name of the key becomes an attribute
 on the type tag, for example: -
 
-```json
 {
-
-    "Location": {
-    	"Longitude": -1.8262,
-    	"Latitude": 51.1789
-    }
-
+	"Location": {
+		"Longitude": -1.8262,
+		"Latitude": 51.1789
+	}
 }
-```
 
 ...becomes...
 
-```xml
-<object>
+`<object>
+
     <object name="Location">
     	<number name="Longitude">-1.8262</number>
     	<number name="Latitude">51.1789</number>
     </object>
-</object>
-```
+
+</object>`
 
 ## Usage
 
@@ -46,14 +42,14 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 ```
-Errors
+Errors.
 
 #### func  Convert
 
 ```go
 func Convert(j JSONDecoder, x XMLEncoder) error
 ```
-Convert converts JSON and sends it to the given XML encoder
+Convert converts JSON and sends it to the given XML encoder.
 
 #### type Converter
 
@@ -62,21 +58,21 @@ type Converter struct {
 }
 ```
 
-Converter represents the ongoing conversion from JSON to XML
+Converter represents the ongoing conversion from JSON to XML.
 
 #### func  Tokens
 
 ```go
 func Tokens(j JSONDecoder) *Converter
 ```
-Tokens provides a JSON converter that implements the xml.TokenReader interface
+Tokens provides a JSON converter that implements the xml.TokenReader interface.
 
 #### func (*Converter) Token
 
 ```go
 func (c *Converter) Token() (xml.Token, error)
 ```
-Token gets a xml.Token from the Converter, as per the xml.TokenReader interface
+Token gets a xml.Token from the Converter, as per the xml.TokenReader interface.
 
 #### type JSONDecoder
 
@@ -89,7 +85,8 @@ type JSONDecoder interface {
 JSONDecoder represents a type that gives out JSON tokens, usually implemented by
 *json.Decoder It is encouraged for implementers of this interface to output
 numbers using the json.Number type, as it reduces needless conversions. Users of
-the json.Decoder implementation should call the UseNumber method to achieve this
+the json.Decoder implementation should call the UseNumber method to achieve
+this.
 
 #### type XMLEncoder
 
@@ -100,4 +97,4 @@ type XMLEncoder interface {
 ```
 
 XMLEncoder represents a type that takes XML tokens, usually implemented by
-*xml.Encoder
+*xml.Encoder.
