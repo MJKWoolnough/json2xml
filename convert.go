@@ -116,8 +116,7 @@ func (c *Converter) Token() (xml.Token, error) {
 
 		keyName = &tokenStr
 
-		token, err = c.decoder.Token()
-		if err != nil {
+		if token, err = c.decoder.Token(); err != nil {
 			return nil, err
 		}
 	}
@@ -217,16 +216,13 @@ func Convert(j JSONDecoder, x XMLEncoder) error {
 	}
 
 	for {
-		tk, err := c.Token()
-		if err != nil {
+		if tk, err := c.Token(); err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
 
 			return err
-		}
-
-		if err = x.EncodeToken(tk); err != nil {
+		} else if err = x.EncodeToken(tk); err != nil {
 			return err
 		}
 	}
