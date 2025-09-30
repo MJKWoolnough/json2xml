@@ -127,26 +127,7 @@ func (c *Converter) Token() (xml.Token, error) {
 func (c *Converter) output(keyName *string, token json.Token) (xml.Token, error) {
 	switch token := token.(type) {
 	case json.Delim:
-		switch token {
-		case '{':
-			return c.outputStart(typObject, keyName), nil
-		case '[':
-			return c.outputStart(typArray, keyName), nil
-		case '}':
-			if len(c.types) == 0 || c.types[len(c.types)-1] != typObject {
-				return nil, ErrInvalidToken
-			}
-
-			return c.outputEnd(), nil
-		case ']':
-			if len(c.types) == 0 || c.types[len(c.types)-1] != typArray {
-				return nil, ErrInvalidToken
-			}
-
-			return c.outputEnd(), nil
-		default:
-			return nil, ErrUnknownToken
-		}
+		return c.outputDelim(keyName, token)
 	case bool:
 		if token {
 			return c.outputType(typBool, &cTrue, keyName), nil
@@ -163,9 +144,32 @@ func (c *Converter) output(keyName *string, token json.Token) (xml.Token, error)
 		return c.outputType(typString, &token, keyName), nil
 	case nil:
 		return c.outputType(typNull, nil, keyName), nil
-	default:
-		return nil, ErrUnknownToken
 	}
+
+	return nil, ErrUnknownToken
+}
+
+func (c *Converter) outputDelim(keyName *string, token json.Delim) (xml.Token, error) {
+	switch token {
+	case '{':
+		return c.outputStart(typObject, keyName), nil
+	case '[':
+		return c.outputStart(typArray, keyName), nil
+	case '}':
+		if len(c.types) == 0 || c.types[len(c.types)-1] != typObject {
+			return nil, ErrInvalidToken
+		}
+
+		return c.outputEnd(), nil
+	case ']':
+		if len(c.types) == 0 || c.types[len(c.types)-1] != typArray {
+			return nil, ErrInvalidToken
+		}
+
+		return c.outputEnd(), nil
+	}
+
+	return nil, ErrUnknownToken
 }
 
 func (c *Converter) outputType(typ ttype, data *string, keyName *string) xml.Token {
