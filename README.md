@@ -1,100 +1,90 @@
 # json2xml
+
+[![CI](https://github.com/MJKWoolnough/json2xml/actions/workflows/go-checks.yml/badge.svg)](https://github.com/MJKWoolnough/json2xml/actions)
+[![Go Reference](https://pkg.go.dev/badge/vimagination.zapto.org/json2xml.svg)](https://pkg.go.dev/vimagination.zapto.org/json2xml)
+[![Go Report Card](https://goreportcard.com/badge/vimagination.zapto.org/json2xml)](https://goreportcard.com/report/vimagination.zapto.org/json2xml)
+
 --
     import "vimagination.zapto.org/json2xml"
 
 Package json2xml converts a JSON structure to XML.
 
-json2xml wraps each type within xml tags named after the type. For example:-
+## Highlights
 
-An object is wrapped in `<object></object>` An array is wrapped in
-`<array></array>` A boolean is wrapped in `<boolean></boolean>` , with either
-"true" or "false" as chardata A number is wrapped in `<number></number>` A
-string is wrapped in `<string></string>` A null becomes `<null></null>`, with no
-### chardata
-
-When a type is a member of an object, the name of the key becomes an attribute
-on the type tag, for example: -
-
-{
-	"Location": {
-		"Longitude": -1.8262,
-		"Latitude": 51.1789
-	}
-}
-
-...becomes...
-
-`<object>
-
-    <object name="Location">
-    	<number name="Longitude">-1.8262</number>
-    	<number name="Latitude">51.1789</number>
-    </object>
-
-</object>`
+ - Safely converts JSON to XML with type-based tags.
+ - Object key names are stored as a name attribute.
 
 ## Usage
 
 ```go
-var (
-	ErrInvalidKey   = errors.New("invalid key type")
-	ErrUnknownToken = errors.New("unknown token type")
-	ErrInvalidToken = errors.New("invalid token")
+package main
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"strings"
+
+	"vimagination.zapto.org/json2xml"
 )
-```
-Errors.
 
-#### func  Convert
+func main() {
+	var buf strings.Builder
 
-```go
-func Convert(j JSONDecoder, x XMLEncoder) error
-```
-Convert converts JSON and sends it to the given XML encoder.
+	jsonData := `` +
+		`[
+	{
+		"A": [
+			{
+				"B": 3.14159,
+				"C": null
+			},
+			"D",
+			"E",
+			null,
+			1.234
+		],
+		"F": 123
+	},
+	"G"
+]`
 
-#### type Converter
+	x := xml.NewEncoder(&buf)
 
-```go
-type Converter struct {
+	x.Indent("", "\t")
+
+	if err := json2xml.Convert(json.NewDecoder(strings.NewReader(jsonData)), x); err != nil {
+		fmt.Printf("unexpected error: %s\n", err)
+
+		return
+	}
+
+	x.Flush()
+
+	fmt.Println(buf.String())
+
+	// Output:
+	// <array>
+	//	<object>
+	//		<array name="A">
+	//			<object>
+	//				<number name="B">3.14159</number>
+	//				<null name="C"></null>
+	//			</object>
+	//			<string>D</string>
+	//			<string>E</string>
+	//			<null></null>
+	//			<number>1.234</number>
+	//		</array>
+	//		<number name="F">123</number>
+	//	</object>
+	//	<string>G</string>
+	// </array>
 }
 ```
 
-Converter represents the ongoing conversion from JSON to XML.
+## Documentation
 
-#### func  Tokens
+Full API docs can be found at:
 
-```go
-func Tokens(j JSONDecoder) *Converter
-```
-Tokens provides a JSON converter that implements the xml.TokenReader interface.
-
-#### func (*Converter) Token
-
-```go
-func (c *Converter) Token() (xml.Token, error)
-```
-Token gets a xml.Token from the Converter, as per the xml.TokenReader interface.
-
-#### type JSONDecoder
-
-```go
-type JSONDecoder interface {
-	Token() (json.Token, error)
-}
-```
-
-JSONDecoder represents a type that gives out JSON tokens, usually implemented by
-*json.Decoder It is encouraged for implementers of this interface to output
-numbers using the json.Number type, as it reduces needless conversions. Users of
-the json.Decoder implementation should call the UseNumber method to achieve
-this.
-
-#### type XMLEncoder
-
-```go
-type XMLEncoder interface {
-	EncodeToken(xml.Token) error
-}
-```
-
-XMLEncoder represents a type that takes XML tokens, usually implemented by
-*xml.Encoder.
+https://pkg.go.dev/vimagination.zapto.org/json2xml
