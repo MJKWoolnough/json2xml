@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/MJKWoolnough/json2xml/actions/workflows/go-checks.yml/badge.svg)](https://github.com/MJKWoolnough/json2xml/actions)
 [![Go Reference](https://pkg.go.dev/badge/vimagination.zapto.org/json2xml.svg)](https://pkg.go.dev/vimagination.zapto.org/json2xml)
-[![Go Report Card](https://goreportcard.com/badge/vimagination.zapto.org/json2xml)](https://goreportcard.com/report/vimagination.zapto.org/json2xml)
 
 --
     import "vimagination.zapto.org/json2xml"
